@@ -1,0 +1,151 @@
+[gd_scene load_steps=17 format=2]
+
+[ext_resource path="res://scenes/ship.tscn" type="PackedScene" id=1]
+[ext_resource path="res://scenes/stars.tscn" type="PackedScene" id=2]
+[ext_resource path="res://scenes/spawner_enemy.tscn" type="PackedScene" id=3]
+[ext_resource path="res://scripts/camera.gd" type="Script" id=4]
+[ext_resource path="res://sprites/armor.png" type="Texture" id=5]
+[ext_resource path="res://fonts/m5x7.ttf" type="DynamicFontData" id=6]
+[ext_resource path="res://sprites/score.png" type="Texture" id=7]
+[ext_resource path="res://sprites/button_hover.png" type="Texture" id=8]
+[ext_resource path="res://sprites/button_pressed.png" type="Texture" id=9]
+[ext_resource path="res://sprites/button_normal.png" type="Texture" id=10]
+[ext_resource path="res://scenes/spawner_powerup.tscn" type="PackedScene" id=11]
+
+[sub_resource type="GDScript" id=1]
+resource_name = "spr_armor"
+script/source = "# script: spr_armor (built-in)
+extends Sprite
+
+func _ready():
+	Utils.attach(\"ship\", \"armor_changed\", self, \"_on_armor_changed\")
+
+	pass
+
+func _on_armor_changed(armor):
+	frame = armor
+	
+"
+
+[sub_resource type="GDScript" id=2]
+resource_name = "tex_score"
+script/source = "#script tex_score (built-in)
+extends TextureRect
+
+var score = 0 setget set_score
+func _ready():
+	pass
+
+func set_score(new_value):
+	score = new_value
+	$label.text = str(score)
+	if score > Game.best_score:
+		Game.best_score = score
+	pass
+"
+
+[sub_resource type="DynamicFont" id=5]
+font_data = ExtResource( 6 )
+
+[sub_resource type="GDScript" id=4]
+resource_name = "btn_main"
+script/source = "#script : btn_start (built - in)
+extends TextureButton
+
+func _ready():
+	Utils.attach(\"ship\", \"tree-exited\", self, \"_on_ship_exit_tree\")
+	pass
+
+
+func _on_btn_start_pressed():
+	get_tree().change_scene(\"res://stages/stage_main.tscn\")
+	pass # Replace with function body.
+
+
+func _on_ship_exit_tree():
+	show()
+
+
+func _on_ship_tree_exited():
+	show()
+	pass # Replace with function body.
+"
+
+[sub_resource type="DynamicFont" id=6]
+font_data = ExtResource( 6 )
+
+[node name="world" type="Node2D"]
+
+[node name="camera" type="Camera2D" parent="."]
+anchor_mode = 0
+current = true
+script = ExtResource( 4 )
+
+[node name="stars" parent="." instance=ExtResource( 2 )]
+
+[node name="ship" parent="." instance=ExtResource( 1 )]
+
+[node name="spawner_powerup" parent="." instance=ExtResource( 11 )]
+
+[node name="spawner_enemy" parent="." instance=ExtResource( 3 )]
+
+[node name="hud" type="CanvasLayer" parent="."]
+
+[node name="spr_armor" type="Sprite" parent="hud"]
+texture = ExtResource( 5 )
+centered = false
+offset = Vector2( 10, 10 )
+hframes = 5
+frame = 4
+script = SubResource( 1 )
+
+[node name="tex_score" type="TextureRect" parent="hud"]
+margin_left = 123.0
+margin_top = 10.0
+margin_right = 170.0
+margin_bottom = 30.0
+texture = ExtResource( 7 )
+script = SubResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="label" type="Label" parent="hud/tex_score"]
+margin_left = 3.0
+margin_top = 1.0
+margin_right = 44.0
+margin_bottom = 15.0
+custom_fonts/font = SubResource( 5 )
+text = "0"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="btn_start" type="TextureButton" parent="hud"]
+visible = false
+margin_left = 67.0
+margin_top = 135.0
+margin_right = 114.0
+margin_bottom = 151.0
+texture_normal = ExtResource( 10 )
+texture_pressed = ExtResource( 9 )
+texture_hover = ExtResource( 8 )
+script = SubResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="label" type="Label" parent="hud/btn_start"]
+margin_left = 4.0
+margin_right = 46.0
+margin_bottom = 31.0
+custom_fonts/font = SubResource( 6 )
+text = "MENU
+"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="tree_exited" from="ship" to="hud/btn_start" method="_on_ship_tree_exited"]
+[connection signal="pressed" from="hud/btn_start" to="hud/btn_start" method="_on_btn_start_pressed"]
